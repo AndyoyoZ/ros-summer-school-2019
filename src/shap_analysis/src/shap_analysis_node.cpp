@@ -1,14 +1,16 @@
-#include <ros/ros.h>
+//激光雷达环境识别挑战赛--基本要求（无障碍物）
+//思路：将laserScan转为cv::Point，然后用cv::approxPolyDP()函数进行多边形拟合，从而识别环境形状
+//by Andyoyo@swust
+//2019-7-31
 
+#include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <Eigen/Core>
-
 #include <opencv2/opencv.hpp>
-
 #include <iostream>
 
 
-int img_w = 720;
+int img_w = 500;
 double focal = 500;
 double z = 1;   
 
@@ -34,7 +36,7 @@ void TranScanToPoints3D(const sensor_msgs::LaserScan& scan_in,std::vector<Eigen:
 
     for (size_t i = 0; i < n_pts; ++i) {
 
-        // TODO: range_cutoff threashold
+        // range_cutoff threashold
         double range_cutoff = 30.0;
         const float range = scan_in.ranges[i];
         if (range < range_cutoff && range >= scan_in.range_min)
@@ -72,7 +74,7 @@ void TranScanToPoints2D(const sensor_msgs::LaserScan& scan_in,std::vector<cv::Po
 
     for (size_t i = 0; i < n_pts; ++i) {
 
-        // TODO: range_cutoff threashold
+        // range_cutoff threashold
         double range_cutoff = 30.0;
         const float range = scan_in.ranges[i];
         if (range < range_cutoff && range >= scan_in.range_min)
@@ -85,13 +87,9 @@ void TranScanToPoints2D(const sensor_msgs::LaserScan& scan_in,std::vector<cv::Po
 }
 
 
-//三维点云转image
-//可以将三维点直接投影为二维点，直接进行多边形逼近，得到物体形状
-
+//三维点云投影到图像坐标系，用于显示
 void PointsToImg(const std::vector<Eigen::Vector3d> points, cv:: Mat &dst)
-{
-
-    
+{   
     cv:: Mat  img(img_w, img_w, CV_8UC1, cv::Scalar::all(0));
 
     for (auto pt: points) {
@@ -116,7 +114,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     std::vector<Eigen::Vector3d> points3d;
     std::vector<cv::Point> approxCurve;
 
-    // test
+    // test 
     TranScanToPoints3D(*msg,points3d);
     cv:: Mat  img(img_w, img_w, CV_8UC1, cv::Scalar::all(0));
     PointsToImg(points3d,img);
